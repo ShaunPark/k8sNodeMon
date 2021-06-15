@@ -1,24 +1,32 @@
 import axios from 'axios'
 
-function checkIsAWS():boolean {
+async function checkIsAWS():Promise<Boolean> {
     let ret = false;
 
-    axios.get("http://169.254.169.254/latest/meta-data").then(() => {
+    await axios.get("http://169.254.169.254/latest/meta-data", { timeout: 1000}).then(() => {
+        console.log("AWS");
         ret = true;
-    }).catch(()=> {ret = false;})
+    }).catch(()=> {
+        console.log("Not AWS");
+        ret = false;
+    })
 
     return ret;    
 }
 
-async function myFunc(isAWS:boolean){
+async function loopFunc(isAWS:boolean){
     // sleep for 1 second
     await new Promise(res=>setTimeout(res,1000))
     console.log("Finished myFunc")
-    process.nextTick(myFunc)
+    process.nextTick(loopFunc)
     // setImmediate(myFunc)
     // setTimeout(myFunc, 0)
 }
 
-let isAWS = checkIsAWS()
-console.log(isAWS)
-myFunc(isAWS) // initial call to myFunc
+async function myFunc() {
+    let isAWS = await checkIsAWS();
+    console.log(isAWS)
+    loopFunc(isAWS.valueOf())
+}
+
+myFunc() // initial call to myFunc
